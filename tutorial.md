@@ -2,6 +2,7 @@
 
 NestJS is a powerful, progressive Node.js framework for building scalable and maintainable server-side applications. Here's a quick guide to get you started:
 
+this tutorial is more focused on using our own files for data, if you want to use ORM there will be a extra part of to the readme where you can do it, but its a very extensive one, so for the tutorial we want to look at we'll use local data in our files purely for time reason. 
 ---
 
 ## 1. **Install NestJS CLI**
@@ -105,7 +106,7 @@ export class UsersService {
 ---
 
 ## 9. **Test the Application**
-Run the application again.
+Run the application again. Inside your project
 ```bash
 npm run start:dev
 ```
@@ -115,14 +116,204 @@ Navigate to `http://localhost:3000/users` to see the list of users.
 ---
 
 
-if you would like to display your users or any other made data, import your file 
+if you would like to display your users or any other made data, lots of places do it with handlebars. if you would like to use it install the next package
 
-```ts
-import { x } from './path/to/your/file'
+```sh
+npm install @nestjs/platform-express hbs
 ```
 
-map and display it 
+then configure Handlebars in the main module 
+Update your app.module.ts to configure Handlebars as the templating engine.
+
+```ts
+import { Module } from '@nestjs/common';
+import { UsersModule } from './users/users.module';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
+
+@Module({
+  imports: [UsersModule],
+})
+export class AppModule {}
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.setViewEngine('hbs');
+  await app.listen(3000);
+}
+bootstrap();
+```
+
+then create a views directory in the root of your project and add `users.hbs`file. 
+
+```ts
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Users</title>
+</head>
+<body>
+  <h1>Users List</h1>
+  <ul>
+    {{#each users}}
+      <li>{{this.name}}</li>
+    {{/each}}
+  </ul>
+</body>
+</html>
+```
+
+then updatae the controller to render the view
+update the `users.controller.ts` to render the view with the list of users. 
+
+```ts
+import { Controller, Get, Render } from '@nestjs/common';
+import { UsersService } from './users.service';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  @Render('users')
+  findAll() {
+    const users = this.usersService.findAll();
+    return { users };
+  }
+}
+```
+
+then run the project again with 
+
+```sh
+npm run start:dev
+```
+
+regarding making the pages actually work, this is not the focus of Nest.js, since its a backend framework. you can use other frameworks for this, from the documentation i found react would be a easy one to use, you can do this with moving your nestjs to a backend folder and the other frontend technology to the frontend folder, both in your root.  
+
+
+for images the best way to work would be making a json formatted file or variable and put the path to the image in that json such as my example: 
+
+```ts
+export const USERS = [
+  {
+    id: 1,
+    username: 'john_doe',
+    email: 'john.doe@example.com',
+    password: 'hashedpassword123',
+    role: 'user', // or 'admin'
+    imagePath: '/images/users/john_doe.jpg', // Path to the user's profile image
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 2,
+    username: 'jane_doe',
+    email: 'jane.doe@example.com',
+    password: 'hashedpassword456',
+    role: 'admin',
+    imagePath: '/images/users/jane_doe.jpg', // Path to the user's profile image
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+```
 
 
 
-Congratulations! You have created a basic NestJS application with a module, controller, and service.
+
+
+
+===========================================ORM========================================================
+
+do note that all these examples are local files, you could also use ORM (Object-relational-mappers) which nestjs is known for you can follow the next steps.
+
+
+
+Here's a README.md file you can use for outlining popular data handling options in NestJS:
+
+markdown
+Code kopiëren
+# NestJS Data Handling Options
+
+When building a NestJS application, selecting the right tool for database interaction is critical. Below are the most popular choices for handling data in NestJS:
+
+---
+
+## **1. TypeORM**
+TypeORM is the most widely used ORM in the NestJS ecosystem, offering full integration and support.
+
+### **Features**
+- Full ORM capabilities (entities, relations, migrations).
+- Decorators for defining models and relationships.
+- Supports various databases (MySQL, PostgreSQL, SQLite, and more).
+
+### **Installation**
+```bash
+npm install --save @nestjs/typeorm typeorm mysql2
+Why Choose It?
+Officially supported by NestJS.
+Easy integration with the NestJS module system.
+2. Prisma
+Prisma is a modern ORM that focuses on developer experience and type safety.
+
+Features
+Schema-first design for database modeling.
+Auto-generates a TypeScript client for queries.
+Easy migrations and support for multiple databases.
+Installation
+bash
+Code kopiëren
+npm install @prisma/client
+npx prisma init
+Why Choose It?
+Excellent TypeScript support.
+Simplifies complex queries.
+Modern and developer-friendly.
+3. Sequelize
+Sequelize is a mature and flexible ORM.
+
+Features
+Full ORM with models, migrations, and associations.
+Supports MySQL, PostgreSQL, SQLite, MariaDB, and more.
+Installation
+bash
+Code kopiëren
+npm install --save @nestjs/sequelize sequelize sequelize-typescript mysql2
+Why Choose It?
+Great for developers familiar with Sequelize from other frameworks.
+Mature and well-supported.
+4. MikroORM
+MikroORM is a lightweight and high-performance ORM.
+
+Features
+Entity-based ORM with strong TypeScript support.
+Focused on simplicity and performance.
+Supports multiple databases.
+Installation
+bash
+Code kopiëren
+npm install @nestjs/mikro-orm mikro-orm
+Why Choose It?
+Lightweight and fast.
+Suitable for performance-critical applications.
+5. Query Builders (e.g., Knex.js)
+Knex.js is a popular query builder for applications that don't require an ORM.
+
+Features
+Manual control over SQL queries with less abstraction.
+Ideal for complex queries.
+Installation
+bash
+Code kopiëren
+npm install knex mysql2
+Why Choose It?
+Full control over SQL queries.
+Avoids ORM limitations.
+What Most Developers Use
+TypeORM: The most common choice due to its official support and rich feature set.
+Prisma: Quickly gaining popularity for its simplicity and modern approach.
+Sequelize: Good for developers familiar with it or migrating legacy projects.
