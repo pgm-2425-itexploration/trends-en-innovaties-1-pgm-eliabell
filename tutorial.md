@@ -229,6 +229,6 @@ export const USERS = [
 
 ===========================================ORM========================================================
 
-do note that all these examples are local files, you could also use ORM (Object-relational-mappers) which nestjs is known for you can follow the next steps.
+do note that all these examples are local files, you could also use ORM (Object-relational-mappers) 
 
 
