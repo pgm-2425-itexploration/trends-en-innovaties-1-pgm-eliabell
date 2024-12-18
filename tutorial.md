@@ -4,7 +4,7 @@ NestJS is a powerful, progressive Node.js framework for building scalable and ma
 
 this tutorial is more focused on using our own files for data, if you want to use ORM there will be a extra part of to the readme where you can do it, but its a very extensive one, so for the tutorial we want to look at we'll use local data in our files purely for time reason. 
 ---
-
+q
 ## 1. **Install NestJS CLI**
 The CLI simplifies project creation and development tasks.
 ```bash
